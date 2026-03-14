@@ -51,7 +51,7 @@ Shows what would be killed. Does not prompt and does not kill.
 portkill 3000 --yes
 ```
 
-Kills process(es) on port 3000 without prompting (graceful terminate).
+Kills process(es) on port 3000 without prompting. Skips confirmation only; uses graceful termination (no force).
 
 ```bash
 portkill 3000 --force
@@ -61,11 +61,11 @@ Force kill (SIGKILL on Unix, `taskkill /F` on Windows) and skip confirmation.
 
 ### Flags
 
-| Flag       | Short | Description                                      |
-| ---------- | ----- | ------------------------------------------------ |
-| `--dry-run`| —     | Show what would be killed; never prompt or kill  |
-| `--yes`    | `-y`  | Skip confirmation prompt                         |
-| `--force`  | `-f`  | Forceful termination; also skips confirmation    |
+| Flag       | Short | Description                                                       |
+| ---------- | ----- | ----------------------------------------------------------------- |
+| `--dry-run`| —     | Show what would be killed; never prompt or kill                   |
+| `--yes`    | `-y`  | Skip confirmation only; graceful terminate (does not force)       |
+| `--force`  | `-f`  | Forceful termination; skips confirmation                          |
 
 ## Exit codes
 
@@ -74,7 +74,7 @@ Force kill (SIGKILL on Unix, `taskkill /F` on Windows) and skip confirmation.
 
 ## Platform behavior
 
-- **Windows** — Uses `netstat -ano`, `tasklist`, and `taskkill`. No extra install.
+- **Windows** — Uses `netstat -ano`, `tasklist`, and `taskkill`. No extra install. Some processes do not respond to normal `taskkill` and only terminate with forceful termination; use `--force` in that case.
 - **macOS / Linux** — Uses `lsof` (port → PID), `ps` (process names), and `kill`. On some systems `lsof` is not installed by default; install it if needed (e.g. `apt install lsof` on Debian/Ubuntu). If `lsof` is missing, portkill prints an error with a hint.
 
 ## Limitations
@@ -82,3 +82,8 @@ Force kill (SIGKILL on Unix, `taskkill /F` on Windows) and skip confirmation.
 - Depends on platform CLI tools; behavior and paths depend on the system.
 - TCP and UDP listeners on the given port are both considered when the underlying tools report them.
 - Process name may be unknown; PID is always shown and used for killing.
+- Non-force termination may fail for processes that only respond to forceful termination (e.g. some Python servers on Windows).
+
+## Smoke tests
+
+Verified on Windows: dry-run reports PIDs without killing; force kill terminates the process and frees the port; unused port exits non-zero with a clear message. Graceful kill (`--yes`) can fail when the target process requires forceful termination.
