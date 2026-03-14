@@ -1,25 +1,29 @@
 # portkill
 
-A cross-platform developer CLI that finds and kills the process currently using a given TCP or UDP port.
+Find and kill the process using a given TCP or UDP port. Cross-platform CLI for when a port is in use (e.g. a stuck dev server on 3000) and you need to free it.
 
-## Why
+## What it does
 
-When a port is in use (e.g. 3000 by a stuck dev server), you need to free it. `portkill` finds the PID(s) on that port and terminates them, with optional confirmation and dry-run.
+- Resolves which process(es) are bound to the given port
+- Prints PID and process name
+- Optionally prompts for confirmation, then terminates them
+- Supports dry-run (no kill, no prompt), skip prompt (`--yes`), and force kill (`--force`)
 
 ## Install
 
-Requires [Rust](https://rustup.rs) (stable). Then:
+[Rust](https://rustup.rs) (stable) required.
 
 ```bash
 cargo install --path .
 ```
 
-Or build and run:
+Or build the binary:
 
 ```bash
 cargo build --release
-# Binary: target/release/portkill (Windows: portkill.exe)
 ```
+
+Binary: `target/release/portkill` (Windows: `target/release/portkill.exe`).
 
 ## Usage
 
@@ -27,50 +31,54 @@ cargo build --release
 portkill <PORT> [OPTIONS]
 ```
 
+Port must be 1–65535.
+
 ### Examples
 
 ```bash
 portkill 3000
 ```
-Find and kill process(es) on port 3000. Prompts for confirmation unless `--yes` or `--force` is used.
+
+Finds process(es) on port 3000 and prompts to confirm before killing (unless `--yes` or `--force` is used).
 
 ```bash
 portkill 3000 --dry-run
 ```
-Show which process(es) would be killed without killing or prompting.
+
+Shows what would be killed. Does not prompt and does not kill.
 
 ```bash
 portkill 3000 --yes
 ```
-Kill without prompting (graceful terminate).
+
+Kills process(es) on port 3000 without prompting (graceful terminate).
 
 ```bash
 portkill 3000 --force
 ```
-Force kill (SIGKILL / taskkill /F) and skip confirmation.
+
+Force kill (SIGKILL on Unix, `taskkill /F` on Windows) and skip confirmation.
 
 ### Flags
 
-| Flag | Short | Description |
-|------|--------|-------------|
-| `--dry-run` | | Show what would be killed; never prompt or kill |
-| `--yes` | `-y` | Skip confirmation prompt |
-| `--force` | `-f` | Forceful termination; skips confirmation |
+| Flag       | Short | Description                                      |
+| ---------- | ----- | ------------------------------------------------ |
+| `--dry-run`| —     | Show what would be killed; never prompt or kill  |
+| `--yes`    | `-y`  | Skip confirmation prompt                         |
+| `--force`  | `-f`  | Forceful termination; also skips confirmation    |
 
-## Exit behavior
+## Exit codes
 
-- **0** – Success (processes killed, or dry-run showed targets, or user declined and exited cleanly).
-- **Non-zero** – Error: no process on port, command not found, kill failed, or partial kill failure.
+- **0** — Success: processes killed, or dry-run completed, or user declined and exited cleanly.
+- **Non-zero** — Failure: no process on port, required command missing, or kill failed (including partial failure).
 
-## Platform notes
+## Platform behavior
 
-- **Windows** – Uses `netstat -ano`, `tasklist`, and `taskkill`. No extra install.
-- **macOS / Linux** – Uses `lsof` and `kill`. `lsof` is usually pre-installed on macOS; on some Linux distros you may need `apt install lsof` (or equivalent).
-
-If `lsof` is missing on Unix, the tool prints a clear error with install hints.
+- **Windows** — Uses `netstat -ano`, `tasklist`, and `taskkill`. No extra install.
+- **macOS / Linux** — Uses `lsof` (port → PID), `ps` (process names), and `kill`. On some systems `lsof` is not installed by default; install it if needed (e.g. `apt install lsof` on Debian/Ubuntu). If `lsof` is missing, portkill prints an error with a hint.
 
 ## Limitations
 
-- Relies on platform CLI tools (`netstat`, `tasklist`, `taskkill` on Windows; `lsof`, `ps`, `kill` on Unix). Path and behavior depend on the system.
-- Both TCP and UDP listeners on the given port are included where the underlying tools report them.
-- Process name lookup can fail; the PID is always shown and used for killing.
+- Depends on platform CLI tools; behavior and paths depend on the system.
+- TCP and UDP listeners on the given port are both considered when the underlying tools report them.
+- Process name may be unknown; PID is always shown and used for killing.
