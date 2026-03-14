@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::process::Command;
 
 use crate::error::{command_not_found, PortkillError, Result};
-use crate::platform::{ProcessInfo, Platform};
+use crate::platform::{Platform, ProcessInfo};
 
 pub struct UnixPlatform;
 

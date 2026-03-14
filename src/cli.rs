@@ -36,10 +36,6 @@ impl Cli {
     pub fn should_prompt(&self) -> bool {
         !self.dry_run && !self.yes && !self.force
     }
-
-    pub fn will_kill(&self) -> bool {
-        !self.dry_run
-    }
 }
 
 #[cfg(test)]

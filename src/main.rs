@@ -9,7 +9,7 @@ use dialoguer::Confirm;
 
 use cli::Cli;
 use error::{PortkillError, Result};
-use platform::{current_platform, get_unique_processes, Platform};
+use platform::{current_platform, get_unique_processes};
 
 fn run() -> Result<()> {
     let cli = Cli::parse();
@@ -38,7 +38,7 @@ fn run() -> Result<()> {
             .interact()
             .map_err(|e| PortkillError::CommandFailed {
                 command: "confirmation prompt".to_string(),
-                source: e,
+                source: std::io::Error::other(e.to_string()),
             })?;
         if !confirm {
             println!("Aborted.");

@@ -2,10 +2,10 @@ use std::collections::HashMap;
 
 use crate::error::Result;
 
-#[cfg(windows)]
-mod windows;
 #[cfg(unix)]
 mod unix;
+#[cfg(windows)]
+mod windows;
 
 #[derive(Debug, Clone)]
 pub struct ProcessInfo {
@@ -20,10 +20,10 @@ pub trait Platform {
 
 pub fn current_platform() -> Box<dyn Platform> {
     #[cfg(windows)]
-    return Box::new(super::windows::WindowsPlatform);
+    return Box::new(windows::WindowsPlatform);
 
     #[cfg(unix)]
-    return Box::new(super::unix::UnixPlatform);
+    return Box::new(unix::UnixPlatform);
 }
 
 pub fn get_unique_processes(processes: Vec<ProcessInfo>) -> Vec<ProcessInfo> {

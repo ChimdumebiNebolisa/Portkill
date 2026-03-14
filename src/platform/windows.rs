@@ -1,18 +1,14 @@
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::process::Command;
 
 use crate::error::{check_command_output, PortkillError, Result};
-use crate::platform::{ProcessInfo, Platform};
+use crate::platform::{Platform, ProcessInfo};
 
 pub struct WindowsPlatform;
 
 impl WindowsPlatform {
     fn netstat_pids(&self, port: u16) -> Result<Vec<u32>> {
-        let output = check_command_output(
-            Command::new("netstat").args(["-ano"]),
-            "netstat -ano",
-        )?;
+        let output = check_command_output(Command::new("netstat").args(["-ano"]), "netstat -ano")?;
         let stdout = String::from_utf8_lossy(&output.stdout);
         let mut pids = Vec::new();
         for line in stdout.lines() {
@@ -53,7 +49,10 @@ impl WindowsPlatform {
                 continue;
             }
             let name = parts[0].trim_matches('"').to_string();
-            let pid_str: String = parts[1].chars().take_while(|c| c.is_ascii_digit()).collect();
+            let pid_str: String = parts[1]
+                .chars()
+                .take_while(|c| c.is_ascii_digit())
+                .collect();
             if let Ok(pid) = pid_str.parse::<u32>() {
                 map.insert(pid, name);
             }
@@ -68,7 +67,7 @@ impl Platform for WindowsPlatform {
         if pids.is_empty() {
             return Err(PortkillError::NoProcessOnPort(port));
         }
-        let mut unique: std::collections::HashSet<u32> = pids.into_iter().collect();
+        let unique: std::collections::HashSet<u32> = pids.into_iter().collect();
         let pids: Vec<u32> = unique.into_iter().collect();
         let names = self.tasklist_names().unwrap_or_default();
         let processes = pids
