@@ -55,4 +55,17 @@ mod tests {
         assert!(parse_port("99999").is_err());
         assert!(parse_port("abc").is_err());
     }
+
+    #[test]
+    fn test_should_prompt() {
+        // dry_run: never prompt
+        assert!(!Cli { port: 3000, dry_run: true, yes: false, force: false }.should_prompt());
+        assert!(!Cli { port: 3000, dry_run: true, yes: true, force: true }.should_prompt());
+        // yes: skip prompt
+        assert!(!Cli { port: 3000, dry_run: false, yes: true, force: false }.should_prompt());
+        // force: skip prompt
+        assert!(!Cli { port: 3000, dry_run: false, yes: false, force: true }.should_prompt());
+        // none: should prompt
+        assert!(Cli { port: 3000, dry_run: false, yes: false, force: false }.should_prompt());
+    }
 }
