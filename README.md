@@ -87,3 +87,8 @@ Force kill (SIGKILL on Unix, `taskkill /F` on Windows) and skip confirmation.
 ## Smoke tests
 
 Verified on Windows: dry-run reports PIDs without killing; force kill terminates the process and frees the port; unused port exits non-zero with a clear message. Graceful kill (`--yes`) can fail when the target process requires forceful termination.
+
+## Contributing
+
+- Run `cargo fmt`, `cargo clippy --all-targets --all-features -- -D warnings`, and `cargo test` before submitting changes.
+- Ensure `cargo build --release` succeeds. Platform-specific behavior lives under `src/platform/`.
