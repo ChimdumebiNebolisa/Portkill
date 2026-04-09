@@ -13,6 +13,8 @@ Find and kill the process using a given TCP or UDP port. Cross-platform CLI for 
 
 [Rust](https://rustup.rs) stable is required.
 
+On Windows, building with Rust's default `x86_64-pc-windows-msvc` target also requires the Microsoft C++ toolchain and Windows SDK. Visual Studio Build Tools 2022 with the C++ build tools workload is sufficient.
+
 ```bash
 cargo install --path .
 ```
@@ -74,7 +76,7 @@ Force kills processes (`SIGKILL` on Unix, `taskkill /F` on Windows) and skips co
 
 ## Platform behavior
 
-- Windows - Uses `netstat -ano`, `tasklist`, and `taskkill`. No extra install. Some processes do not respond to normal `taskkill` and only terminate with forceful termination; use `--force` in that case.
+- Windows - Uses `netstat -ano`, `tasklist`, and `taskkill`. No extra runtime install is required. Some processes do not respond to normal `taskkill` and only terminate with forceful termination; use `--force` in that case.
 - macOS / Linux - Uses `lsof` (port to PID), `ps` (process names), and `kill`. On some systems `lsof` is not installed by default; install it if needed, for example `apt install lsof` on Debian or Ubuntu. If `lsof` is missing, portkill prints an error with a hint.
 
 ## Limitations
@@ -86,7 +88,7 @@ Force kills processes (`SIGKILL` on Unix, `taskkill /F` on Windows) and skips co
 
 ## Smoke tests
 
-Verified on Windows: dry-run reports PIDs without killing, force kill terminates the process and frees the port, and an unused port exits non-zero with a clear message. Graceful kill (`--yes`) can fail when the target process requires forceful termination.
+Verified on Windows: dry-run reports PIDs without killing, exact port matching does not confuse port `300` with `3000`, force kill terminates the process and frees the port, and an unused port exits non-zero with a clear message. Graceful kill (`--yes`) can fail when the target process requires forceful termination.
 
 ## Contributing
 
