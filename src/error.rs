@@ -1,3 +1,4 @@
+#[cfg(windows)]
 use std::process::Command;
 use thiserror::Error;
 
@@ -38,6 +39,7 @@ pub fn command_not_found(command: &str, hint: &str) -> PortkillError {
     }
 }
 
+#[cfg(windows)]
 pub fn check_command_output(cmd: &mut Command, command_name: &str) -> Result<std::process::Output> {
     cmd.output().map_err(|e| PortkillError::CommandFailed {
         command: command_name.to_string(),

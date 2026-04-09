@@ -67,7 +67,7 @@ impl Platform for UnixPlatform {
         if pids.is_empty() {
             return Err(PortkillError::NoProcessOnPort(port));
         }
-        let mut unique: std::collections::HashSet<u32> = pids.into_iter().collect();
+        let unique: std::collections::HashSet<u32> = pids.into_iter().collect();
         let pids: Vec<u32> = unique.into_iter().collect();
         let names = self.get_process_names(&pids);
         let processes = pids

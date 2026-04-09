@@ -7,6 +7,13 @@ use crate::platform::{Platform, ProcessInfo};
 pub struct WindowsPlatform;
 
 impl WindowsPlatform {
+    fn local_endpoint_matches_port(local: &str, port: u16) -> bool {
+        local
+            .rsplit_once(':')
+            .map(|(_, local_port)| local_port == port.to_string())
+            .unwrap_or(false)
+    }
+
     fn netstat_pids(&self, port: u16) -> Result<Vec<u32>> {
         let output = check_command_output(Command::new("netstat").args(["-ano"]), "netstat -ano")?;
         let stdout = String::from_utf8_lossy(&output.stdout);
@@ -21,7 +28,7 @@ impl WindowsPlatform {
                 continue;
             }
             let local = parts.get(1).copied().unwrap_or("");
-            if !local.contains(&format!(":{}", port)) && !local.eq(&format!("[::]:{}", port)) {
+            if !Self::local_endpoint_matches_port(local, port) {
                 continue;
             }
             if let Some(last) = parts.last() {
@@ -99,5 +106,35 @@ impl Platform for WindowsPlatform {
                 message: format!("taskkill exited with code {}", code),
             })
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::WindowsPlatform;
+
+    #[test]
+    fn local_endpoint_matches_port_requires_exact_match() {
+        assert!(WindowsPlatform::local_endpoint_matches_port(
+            "0.0.0.0:3000",
+            3000
+        ));
+        assert!(WindowsPlatform::local_endpoint_matches_port(
+            "[::]:3000",
+            3000
+        ));
+        assert!(WindowsPlatform::local_endpoint_matches_port(
+            "[fe80::1%12]:3000",
+            3000
+        ));
+        assert!(!WindowsPlatform::local_endpoint_matches_port(
+            "0.0.0.0:3000",
+            300
+        ));
+        assert!(!WindowsPlatform::local_endpoint_matches_port(
+            "[::]:3000",
+            30
+        ));
+        assert!(!WindowsPlatform::local_endpoint_matches_port("*:*", 3000));
     }
 }
